@@ -17,7 +17,7 @@ use App\Http\Controllers\PinController;
 Route::get('/', function () {
     return view('welcome');
 });
-
+Route::view('/working', 'workingmap');
 Route::get('/pins', [PinController::class, 'index']);
 Route::get('/create', [PinController::class, 'store']);
 Route::post('/delete', [PinController::class, 'destroy']);

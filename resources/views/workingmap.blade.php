@@ -1,70 +1,67 @@
 <!DOCTYPE html>
-<!--
- @license
- Copyright 2019 Google LLC. All Rights Reserved.
- SPDX-License-Identifier: Apache-2.0
--->
 <html>
   <head>
-    <title>Add Map</title>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
-
-    <!-- <link rel="stylesheet" type="text/css" href="../css/style.css" />
-    <script type="module" src="../js/index.js"></script> -->
-
-    <!-- Add your style rules here -->
-    <style>
-      body {
-        background-color: #f0f0f0;
-        font-family: Arial, sans-serif;
-      }
-
-      h3 {
-        color: blue;
-      }
-      #map {
-    height: 400px;
-  }
-    </style>
+    <title>Displaying and Editing Data with Axios</title>
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
   </head>
   <body>
-    <h3>My Google Maps Demo</h3>
-    <!--The div element for the map -->
-    <div id="map"></div>
+    <h1>Data from Axios Request:</h1>
+    <div id="data-container"></div>
 
-    <!-- prettier-ignore -->
-    <script>(g=>{var h,a,k,p="The Google Maps JavaScript API",c="google",l="importLibrary",q="__ib__",m=document,b=window;b=b[c]||(b[c]={});var d=b.maps||(b.maps={}),r=new Set,e=new URLSearchParams,u=()=>h||(h=new Promise(async(f,n)=>{await (a=m.createElement("script"));e.set("libraries",[...r]+"");for(k in g)e.set(k.replace(/[A-Z]/g,t=>"_"+t[0].toLowerCase()),g[k]);e.set("callback",c+".maps."+q);a.src=`https://maps.${c}apis.com/maps/api/js?`+e;d[q]=f;a.onerror=()=>h=n(Error(p+" could not load."));a.nonce=m.querySelector("script[nonce]")?.nonce||"";m.head.append(a)}));d[l]?console.warn(p+" only loads once. Ignoring:",g):d[l]=(f,...n)=>r.add(f)&&u().then(()=>d[l](f,...n))})
-        ({key: "AIzaSyBKLSpPTjBW85app41q294VhRivfau8inQ", v: "beta"});</script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+      // Define the URL for the Axios request
+      var url = "/pins";
+
+      // Get the HTML element where the data will be displayed
+      var dataContainer = document.getElementById("data-container");
+
+      // Make the Axios request to retrieve the data
+      axios.get(url)
+        .then(function(response) {
+          // Dynamically generate HTML elements for each object in the response data
+          response.data.forEach(function(obj, index) {
+            // Create a div element to hold the data and the edit button
+            var div = document.createElement("div");
+            div.setAttribute("id", "data-" + index);
+
+            // Create a p element to display the data
+            var p = document.createElement("p");
+            p.innerHTML = JSON.stringify(obj, null, 2);
+
+            // Create a button element to edit the data
+            var editBtn = document.createElement("button");
+            editBtn.innerHTML = "Edit";
+            editBtn.setAttribute("data-index", index);
+            editBtn.addEventListener("click", function() {
+              // Get the new value of the data from the user
+              var newData = prompt("Enter the new data:");
+
+              // Get the index of the edited data
+              var dataIndex = this.getAttribute("data-index");
+
+              // Update the data on the server using an Axios POST request
+              axios.post(url, { index: dataIndex, data: newData })
+                .then(function(response) {
+                  // Set the innerHTML of the p element to the updated value
+                  p.innerHTML = JSON.stringify(response.data, null, 2);
+                })
+                .catch(function(error) {
+                  console.log(error);
+                });
+            });
+
+            // Append the p element and the edit button to the div element
+            div.appendChild(p);
+            div.appendChild(editBtn);
+
+            // Append the div element to the data container
+            dataContainer.appendChild(div);
+          });
+        })
+        .catch(function(error) {
+          console.log(error);
+        });
+    </script>
   </body>
 </html>
-
-<script>
-// Initialize and add the map
-let map;
-
-async function initMap() {
-  // The location of Uluru
-  const position = { lat: -25.344, lng: 131.031 };
-  // Request needed libraries.
-  //@ts-ignore
-  const { Map } = await google.maps.importLibrary("maps");
-  const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
-
-  // The map, centered at Uluru
-  map = new Map(document.getElementById("map"), {
-    zoom: 4,
-    center: position,
-    mapId: "DEMO_MAP_ID",
-  });
-
-  // The marker, positioned at Uluru
-  const marker = new AdvancedMarkerElement({
-    map: map,
-    position: position,
-    title: "Uluru",
-  });
-}
-
-initMap();
-
-</script>

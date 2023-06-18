@@ -75,6 +75,30 @@
   `;
 
   locationInputContainer.appendChild(locationInput);
+
+  // Get the input field
+  const input = locationInput.getElementsByTagName("input")[0];
+
+  // Initialize the autocomplete object
+  const autocomplete = new google.maps.places.Autocomplete(input);
+
+  // Add a listener for when a place is selected
+  google.maps.event.addListener(autocomplete, "place_changed", function () {
+    const place = autocomplete.getPlace();
+    if (place.geometry) {
+      // Add a marker for the selected place
+      const marker = new google.maps.Marker({
+        position: place.geometry.location,
+        map: map,
+      });
+      markers.push(marker);
+      map.setCenter(place.geometry.location);
+      input.value = "";
+      locationInput.style.display = "none";
+    } else {
+      console.log("No location found for the input: " + input.value);
+    }
+  });
 }
 // Get the user's current location and add it to the map
 function getCurrentLocation(event) {
