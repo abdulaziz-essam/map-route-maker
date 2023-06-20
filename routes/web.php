@@ -17,8 +17,10 @@ use App\Http\Controllers\PinController;
 Route::get('/', function () {
     return view('welcome');
 });
-Route::view('/working', 'workingmap');
+Route::view('/list', 'newmap');
+Route::view('/editform', 'newsecm');
 Route::get('/pins', [PinController::class, 'index']);
 Route::get('/create', [PinController::class, 'store']);
-Route::post('/delete', [PinController::class, 'destroy']);
+Route::get('/pins/{id}', [PinController::class, 'destroy']);
+
 Route::get('/edit', [PinController::class, 'update']);
