@@ -37,21 +37,23 @@
             // Create a button element to edit the data
             var editBtn = document.createElement("button");
             editBtn.innerHTML = "Edit";
-            editBtn.setAttribute("data-id", obj.id);
             editBtn.setAttribute("data-name", obj.name);
+            editBtn.setAttribute("data-latitude", obj.latitude);
+            editBtn.setAttribute("data-longitude", obj.longitude);
             editBtn.addEventListener("click", function() {
               // Get the new value of the data from the user
               var newData = prompt("Enter the new data:");
 
-              // Get the id and name of the edited data
-              var dataId = this.getAttribute("data-id");
+              // Get the name, latitude, and longitude of the edited data
               var dataName = this.getAttribute("data-name");
+              var dataLatitude = this.getAttribute("data-latitude");
+              var dataLongitude = this.getAttribute("data-longitude");
 
-              // Store the edited data and its id and name in the localStorage object
-              localStorage.setItem("editedData", JSON.stringify({ id: dataId, name: dataName, data: newData }));
+              // Store the edited data, its name, latitude, and longitude in the localStorage object
+              localStorage.setItem("editedData", JSON.stringify({  location: { name: dataName,latitude: dataLatitude, longitude: dataLongitude } }));
 
-              // Navigate to the new component
-              window.location.href = "/editform";
+              // Navigate to the edit page
+              window.location.href = "/";
             });
 
             // Create a button element to delete the data
@@ -60,7 +62,7 @@
             deleteBtn.setAttribute("data-id", obj.id);
             deleteBtn.addEventListener("click", function() {
               var dataId = this.getAttribute("data-id");
-              axios.get(url+"/"+dataId, { data: { id: dataId } })
+              axios.delete(url+"/"+dataId)
               .then(function(response) {
                 div.remove();
               })

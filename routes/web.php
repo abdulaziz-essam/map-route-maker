@@ -15,7 +15,7 @@ use App\Http\Controllers\PinController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('newsecm');
 });
 Route::view('/list', 'newmap');
 Route::view('/editform', 'newsecm');

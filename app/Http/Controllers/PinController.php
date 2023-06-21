@@ -33,29 +33,19 @@ class PinController extends Controller
 public function store(Request $request)
 {
     $validatedData = $request->validate([
-        'latitude' => 'required|max:255',
-        'longitude' => 'required|max:255',
-        'name' => 'required|max:255',
+        'locations' => 'required|array',
+        'locations.*.latitude' => 'required|numeric',
+        'locations.*.longitude' => 'required|numeric',
+        'locations.*.name' => 'required|string',
     ]);
 
-    $pin = new Pin;
-
-    $pin->latitude = $validatedData['latitude'];
-    $pin->longitude = $validatedData['longitude'];
-    $pin->name = $validatedData['name'];
-
-    try {
-        $pin->save();
-    } catch (\Exception $e) {
-        return response()->json([
-            'message' => 'Error creating pin',
-            'error' => $e->getMessage()
-        ], 500);
-    }
+    $pin = new Pin();
+    $pin->locations = $validatedData['locations'];
+    $pin->save();
 
     return response()->json([
         'message' => 'Pin created successfully!',
-        'data' => $pin
+        'pin' => $pin,
     ], 201);
 }
     /**
@@ -77,7 +67,7 @@ public function store(Request $request)
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request)
     {
         //
     }

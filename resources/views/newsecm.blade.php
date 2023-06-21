@@ -8,13 +8,13 @@
   <h1>Edit Data:</h1>
   <div id="map" style="height: 400px;"></div>
   <div id="edit-form">
-    <label for="data-id">ID:</label>
-    <input type="text" id="data-id">
+    <label for="data-latitude">Latitude:</label>
+    <input type="text" id="data-latitude">
     <label for="data-name">Name:</label>
     <input type="text" id="data-name">
     <label for="data-input">Data:</label>
     <input type="text" id="data-input">
-    <button id="submit-btn">Save Changes</button>
+    <!-- <button id="submit-btn">Save Changes</button> -->
   </div>
 
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
@@ -28,6 +28,7 @@
     var dataInput = document.getElementById("data-input");
     var dataId = document.getElementById("data-id");
     var dataName = document.getElementById("data-name");
+    var dataLatitude = document.getElementById("data-latitude");
     let map;
       let markers = [];
       let directionsService;
@@ -48,55 +49,24 @@
 
         directionsRenderer.setMap(map);
       }
-    // Get the ID and name values from the localStorage object
-    var editedData = JSON.parse(localStorage.getItem("editedData"));
-    var id = editedData.id;
-    var name = editedData.name;
 
-    // Pre-fill the id and name input fields with the values passed from the previous page
-    dataId.value = id;
-    dataName.value = name;
+      // Retrieve the editedData object from localStorage
+      var editedData = JSON.parse(localStorage.getItem("editedData"));
+console.log(editedData)
+      // Access the properties of the editedData object
+      var locationData = editedData.location;
+      var latitude = locationData.latitude;
+      var longitude = locationData.longitude;
+      var name = locationData.name;
 
-    // Fetch the pin data from the server using an Axios GET request
-    axios.get("/pins/"+id)
-      .then(function(response) {
-        var pinData = response.data;
+      // Set the value of the latitude and longitude input fields
+      dataLatitude.value = latitude;
+      dataName.value = name;
+      dataInput.value = longitude;
 
-        // Pre-fill the input fields with the pin data
-        dataInput.value = pinData.data;
+      // Set the value of the ID input field
+      dataId.value = editedData.id;
 
-        // Initialize the map centered on the pin location
-        var map = new google.maps.Map(document.getElementById("map"), {
-          center: { lat: pinData.lat, lng: pinData.lng },
-          zoom: 12,
-        });
-
-        // Add a marker to the map at the pin location
-        var marker = new google.maps.Marker({
-          position: { lat: pinData.lat, lng: pinData.lng },
-          map: map,
-        });
-      })
-      .catch(function(error) {
-        console.log(error);
-      });
-
-    // Add an event listener to the submit button
-    var submitBtn = document.getElementById("submit-btn");
-    submitBtn.addEventListener("click", function() {
-      // Get the updated data from the input field
-      var updatedData = dataInput.value;
-
-      // Update the pin data on the server using an Axios PUT request
-      axios.put("/pins/"+id, { data: updatedData })
-        .then(function(response) {
-          // Navigate back to the original page
-          window.location.href = "/";
-        })
-        .catch(function(error) {
-          console.log(error);
-        });
-    });
   </script>
 </body>
 </html>

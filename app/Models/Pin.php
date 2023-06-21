@@ -8,4 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Pin extends Model
 {
     use HasFactory;
+
+    protected $fillable = [
+        'name',
+        'locations',
+    ];
+
+    protected $casts = [
+        'locations' => 'array',
+    ];
 }

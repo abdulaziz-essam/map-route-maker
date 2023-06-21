@@ -94,7 +94,6 @@
       markers.push(marker);
       map.setCenter(place.geometry.location);
       input.value = "";
-      locationInput.style.display = "none";
     } else {
       console.log("No location found for the input: " + input.value);
     }
@@ -105,6 +104,9 @@ function getCurrentLocation(event) {
   const button = event.target;
   const locationInput = button.parentNode;
   const addressField = locationInput.querySelector('input[type="text"]');
+
+  // Show the location input field
+  locationInput.style.display = "block";
 
   // Check if geolocation is supported by the browser
   if (navigator.geolocation) {
@@ -140,6 +142,9 @@ function addMarker(event) {
   const locationInput = button.parentNode;
   const addressField = locationInput.querySelector('input[type="text"]');
 
+  // Show the location input field
+  locationInput.style.display = "block";
+
   // Get the location from the input field
   const address = addressField.value.trim();
 
@@ -169,10 +174,10 @@ function addMarker(event) {
     addressField.value = "";
 
     // Hide the location input field
-    locationInput.style.display = "none";
+    // locationInput.style.display = "none";
 
     // Pass the results array to calculateRoute
-    calculateRoute(results, address);
+    calculateRoute(markers);
   } else {
     alert("Geocode was not successful for the following reason: " + status);
   }
