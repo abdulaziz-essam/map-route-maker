@@ -34,8 +34,8 @@ public function store(Request $request)
 {
     $validatedData = $request->validate([
         'locations' => 'required|array',
-        'locations.*.latitude' => 'required|numeric',
-        'locations.*.longitude' => 'required|numeric',
+        'locations.*.latitude' => 'required|string',
+        'locations.*.longitude' => 'required|string',
         'locations.*.name' => 'required|string',
     ]);
 
@@ -53,7 +53,11 @@ public function store(Request $request)
      */
     public function show(string $id)
     {
-        //
+        $pin = Resource::find($id);
+        return response()->json([
+            'message' => 'Pin find successfully!',
+            'pin' => $pin,
+        ], 201);
     }
 
     /**

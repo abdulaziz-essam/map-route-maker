@@ -22,8 +22,8 @@
           // Dynamically generate HTML elements for each object in the response data
           response.data.forEach(function(obj, index) {
             // Add the id and name properties to the obj object
-            obj.id = "data-" + index;
-            obj.name = "data-" + index + "-name";
+            obj.id =  index;
+
 
             // Create a div element to hold the data and the edit/delete buttons
             var div = document.createElement("div");
@@ -31,30 +31,32 @@
 
             // Create a p element to display the data
             var p = document.createElement("p");
-            p.setAttribute("id", obj.name);
+            p.setAttribute("name", obj.locations.name);
             p.innerHTML = JSON.stringify(obj, null, 2);
 
             // Create a button element to edit the data
             var editBtn = document.createElement("button");
             editBtn.innerHTML = "Edit";
-            editBtn.setAttribute("data-name", obj.name);
-            editBtn.setAttribute("data-latitude", obj.latitude);
-            editBtn.setAttribute("data-longitude", obj.longitude);
+
+
+// Store the locations array as a JSON string in a custom attribute
+editBtn.setAttribute("data-locations", JSON.stringify(obj));
+editBtn.setAttribute("data-id", obj.id);
             editBtn.addEventListener("click", function() {
-              // Get the new value of the data from the user
-              var newData = prompt("Enter the new data:");
+  // Get the name, latitude, and longitude of the edited data
+  var data = this.getAttribute("data-locations");
+  let id = this.getAttribute("data-id");
+console.log(id)
 
-              // Get the name, latitude, and longitude of the edited data
-              var dataName = this.getAttribute("data-name");
-              var dataLatitude = this.getAttribute("data-latitude");
-              var dataLongitude = this.getAttribute("data-longitude");
+  // Construct an object with the data to be passed
 
-              // Store the edited data, its name, latitude, and longitude in the localStorage object
-              localStorage.setItem("editedData", JSON.stringify({  location: { name: dataName,latitude: dataLatitude, longitude: dataLongitude } }));
 
-              // Navigate to the edit page
-              window.location.href = "/";
-            });
+  // Store the data in local storage
+  localStorage.setItem("editData", JSON.stringify(id));
+
+  // Navigate to the edit page
+  window.location.href = "/";
+});
 
             // Create a button element to delete the data
             var deleteBtn = document.createElement("button");

@@ -24,3 +24,7 @@ Route::get('/create', [PinController::class, 'store']);
 Route::get('/pins/{id}', [PinController::class, 'destroy']);
 
 Route::get('/edit', [PinController::class, 'update']);
+Route::post('/show', [PinController::class, 'show']);
+Route::get('/csrf', function () {
+    return response()->json(['csrfToken' => csrf_token()]);
+  });
