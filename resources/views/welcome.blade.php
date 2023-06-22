@@ -37,13 +37,14 @@
     <script defer
       src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBKLSpPTjBW85app41q294VhRivfau8inQ&libraries=places,directions&callback=initMap"
       type="text/javascript"></script>
-
+      <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <!-- Initialize the map and add markers -->
     <script defer>
       let map;
       let markers = [];
       let directionsService;
       let directionsRenderer;
+      let autocomplete;
 
       // Initialize and add the map
       function initMap() {
@@ -59,187 +60,192 @@
         });
 
         directionsRenderer.setMap(map);
+
+        // Initialize the autocomplete object
+        autocomplete = new google.maps.places.Autocomplete(
+          document.getElementById("autocomplete-input")
+        );
       }
 
- // Add a location input field
- function addLocationInput() {
-  const locationInputContainer = document.getElementById("location-input-container");
-  const inputCount = locationInputContainer.getElementsByTagName("input").length;
+      // Add a location input field
+      function addLocationInput() {
+        const locationInputContainer = document.getElementById("location-input-container");
+        const inputCount = locationInputContainer.getElementsByTagName("input").length;
 
-  const locationInput = document.createElement("div");
-  locationInput.className = "location-input";
-  locationInput.innerHTML = `
-    <input type="text" placeholder="Enter Location ${inputCount + 1}">
-    <button onclick="addMarker(event)">Add Marker</button>
-    <button onclick="getCurrentLocation(event)">Use Current Location</button>
-  `;
+        const locationInput = document.createElement("div");
+        locationInput.className = "location-input";
+        locationInput.innerHTML = `
+          <input type="text" placeholder="Enter Location ${inputCount + 1}">
+          <button onclick="addMarker(event)">Add Marker</button>
+          <button onclick="getCurrentLocation(event)">Use Current Location</button>
+        `;
 
-  locationInputContainer.appendChild(locationInput);
+        locationInputContainer.appendChild(locationInput);
 
-  // Get the input field
-  const input = locationInput.getElementsByTagName("input")[0];
+        // Get the input field
+        const input = locationInput.getElementsByTagName("input")[0];
 
-  // Initialize the autocomplete object
-  const autocomplete = new google.maps.places.Autocomplete(input);
+        // Initialize the autocomplete object
+        const autocomplete = new google.maps.places.Autocomplete(input);
 
-  // Add a listener for when a place is selected
-  google.maps.event.addListener(autocomplete, "place_changed", function () {
-    const place = autocomplete.getPlace();
-    if (place.geometry) {
-      // Add a marker for the selected place
-      const marker = new google.maps.Marker({
-        position: place.geometry.location,
-        map: map,
-      });
-      markers.push(marker);
-      map.setCenter(place.geometry.location);
-      input.value = "";
-    } else {
-      console.log("No location found for the input: " + input.value);
-    }
-  });
-}
-// Get the user's current location and add it to the map
-function getCurrentLocation(event) {
-  const button = event.target;
-  const locationInput = button.parentNode;
-  const addressField = locationInput.querySelector('input[type="text"]');
+        // Add a listener for when a place is selected
+        google.maps.event.addListener(autocomplete, "place_changed", function () {
+          const place = autocomplete.getPlace();
+          if (place.geometry) {
+            // Add a marker for the selected place
+            const marker = new google.maps.Marker({
+              position: place.geometry.location,
+              map: map,
+            });
+            markers.push(marker);
+            map.setCenter(place.geometry.location);
+            input.value = "";
+          } else {
+            console.log("No location found for the input: " + input.value);
+          }
+        });
+      }
 
-  // Show the location input field
-  locationInput.style.display = "block";
+      // Get the user's current location and add it to the map
+      function getCurrentLocation(event) {
+        const button = event.target;
+        const locationInput = button.parentNode;
+        const addressField = locationInput.querySelector('input[type="text"]');
 
-  // Check if geolocation is supported by the browser
-  if (navigator.geolocation) {
-    // Get the user's current position
-    navigator.geolocation.getCurrentPosition(function(position) {
-      // Create a new marker at the user's current position
-      const marker = new google.maps.Marker({
-        position: { lat: position.coords.latitude, lng: position.coords.longitude },
-        map: map,
-      });
+        // Show the location input field
+        locationInput.style.display = "block";
 
-      // Add the marker to the markers array
-      markers.push(marker);
+        // Check if geolocation is supported by the browser
+        if (navigator.geolocation) {
+          // Get the user's current position
+          navigator.geolocation.getCurrentPosition(function(position) {
+            // Create a new marker at the user's current position
+            const marker = new google.maps.Marker({
+              position: { lat: position.coords.latitude, lng: position.coords.longitude },
+              map: map,
+            });
+            markers.push(marker);
+            map.setCenter(marker.getPosition());
+            addressField.value = "";
+          }, function(error) {
+            console.error(error);
+          });
+        } else {
+          console.error("Geolocation is not supported by this browser.");
+        }
+      }
 
-      // Center the map on the new marker
-      map.setCenter(marker.getPosition());
+      // Add a marker to the map
+      function addMarker(event) {
+        const button = event.target;
+        const locationInput = button.parentNode;
+        const input = locationInput.querySelector('input[type="text"]');
 
-      // Clear the input field
-      addressField.value = "";
+        // Show the location input field
+        locationInput.style.display = "block";
 
-      // Hide the location input field
-      locationInput.style.display = "none";
-    }, function(error) {
-      alert(`Unable to retrieve your location: ${error.message}`);
-    });
-  } else {
-    alert("Geolocation is not supported by your browser");
-  }
-}
+        // Get the place details from the input field
+        const place = autocomplete.getPlace();
 
-function addMarker(event) {
-  const button = event.target;
-  const locationInput = button.parentNode;
-  const addressField = locationInput.querySelector('input[type="text"]');
+        // Check if a place was selected
+        if (place.geometry) {
+         // Add a marker for the selected place
+          const marker = new google.maps.Marker({
+            position: place.geometry.location,
+            map: map,
+          });
+          markers.push(marker);
+          map.setCenter(place.geometry.location);
+          input.value = "";
+        } else {
+          console.log("No location found for the input: " + input.value);
+        }
+      }
 
-  // Show the location input field
-  locationInput.style.display = "block";
+      // Calculate the route between the markers
+      function calculateRoute() {
+        const start = markers[0].getPosition();
+        const end = markers[markers.length - 1].getPosition();
+        const waypoints = [];
 
-  // Get the location from the input field
-  const address = addressField.value.trim();
+        // Add any intermediate markers as waypoints
+        for (let i = 1; i < markers.length - 1; i++) {
+          waypoints.push({
+            location: markers[i].getPosition(),
+            stopover: true,
+          });
+        }
 
-  // Check if the input field is empty
-  if (address === "") {
-    alert("Please enter a location");
-    return;
-  }
+        // Set up the request object
+        const request = {
+          origin: start,
+          destination: end,
+          waypoints: waypoints,
+          optimizeWaypoints: true,
+          travelMode: google.maps.TravelMode.DRIVING,
+        };
 
-  // Use Geocoder to get location information from address
-  const geocoder = new google.maps.Geocoder();
-  geocoder.geocode({ address: address }, function (results, status) {
-  if (status === "OK") {
-    // Add a marker at the location
-    const marker = new google.maps.Marker({
-      position: results[0].geometry.location,
-      map: map,
-    });
+        // Call the Directions service to calculate the route
+        directionsService.route(request, function (result, status) {
+          if (status == "OK") {
+            // Display the route on the map
+            directionsRenderer.setDirections(result);
+          } else {
+            console.error("Error calculating route:", status);
+          }
+        });
+      }
 
-    // Add the marker to the markers array
-    markers.push(marker);
+      // Clear all markers from the map
+      function clearMarkers() {
+        for (let i = 0; i < markers.length; i++) {
+          markers[i].setMap(null);
+        }
+        markers = [];
+        directionsRenderer.setMap(null);
+      }
 
-    // Center the map on the new marker
-    map.setCenter(results[0].geometry.location);
+      // Save the route to a file
+      function saveRoute() {
+        const data = {
+          markers: markers.map(function (marker) {
+            return {
+              lat: marker.getPosition().lat(),
+              lng: marker.getPosition().lng(),
+            };
+          }),
+        };
 
-    // Clear the input field
-    addressField.value = "";
-
-    // Hide the location input field
-    // locationInput.style.display = "none";
-
-    // Pass the results array to calculateRoute
-    calculateRoute(markers);
-  } else {
-    alert("Geocode was not successful for the following reason: " + status);
-  }
-});
-}
-
-function calculateRoute(markers) {
-  if (markers.length < 2) {
-    alert("Please add at least two locations");
-    return;
-  }
-
-  const waypoints = [];
-  for (let i = 1; i < markers.length - 1; i++) {
-    waypoints.push({
-      location: markers[i].getPosition(),
-      stopover: true,
-    });
-  }
-
-  const origin = markers[0].getPosition();
-  const destination = markers[markers.length - 1].getPosition();
-
-  const request = {
-    origin: origin,
-    destination: destination,
-    waypoints: waypoints,
-    optimizeWaypoints: true,
-    travelMode: google.maps.TravelMode.DRIVING,
-  };
-
-  directionsService.route(request, function (result, status) {
-    if (status == "OK") {
-      directionsRenderer.setDirections(result);
-    }
-  });
-}
-
-      // Send a POST request to the server-side script
-function saveLocationToDB(name, latitude, longitude) {
-  const xhr = new XMLHttpRequest();
-  xhr.open("POST", "/create");
-  xhr.setRequestHeader("Content-Type", "application/json");
-  xhr.onload = function() {
-    if (xhr.status === 200) {
-      console.log("Location saved to database");
-    } else {
-      console.log("Error saving location to database");
-    }
-  };
-  xhr.send(JSON.stringify({ name: name, latitude: latitude, longitude: longitude }));
-}
+        // Send the data to the server to save it
+        axios.post("/create", data)
+          .then(function (response) {
+            console.log(response.data);
+          })
+          .catch(function (error) {
+            console.error("Error saving route:", error);
+          });
+      }
     </script>
   </head>
   <body>
     <h3>Custom Driving Directions</h3>
-    <div>
-  <button onclick="addLocationInput()">Add Location</button>
-  <div id="location-input-container"></div>
-  <button onclick="calculateRoute(markers)">Calculate Route</button>
-</div>
-<div id="map"></div>
-<div id="directions-panel"></div>
+
+    <!-- Add a button to add location input fields -->
+    <button onclick="addLocationInput()">Add Location</button>
+
+    <!-- Add a button to calculate the route -->
+    <button onclick="calculateRoute()">Calculate Route</button>
+
+    <!-- Add a button to clear all markers from the map -->
+    <button onclick="clearMarkers()">Clear Map</button>
+
+    <!-- Add a button to save the route to a file -->
+    <button onclick="saveRoute()">Save Route</button>
+
+    <!-- Add a container for the location input fields -->
+    <div id="location-input-container"></div>
+
+    <!-- Add a container for the map -->
+    <div id="map"></div>
   </body>
 </html>

@@ -53,7 +53,7 @@ public function store(Request $request)
      */
     public function show(string $id)
     {
-        $pin = Resource::find($id);
+        $pin = Pin::find($id);
         return response()->json([
             'message' => 'Pin find successfully!',
             'pin' => $pin,
